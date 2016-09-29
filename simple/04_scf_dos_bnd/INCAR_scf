@@ -1,0 +1,15 @@
+SYSTEM = Si_scf
+PREC   = High
+EDIFF  = 1.0d-7
+
+ENCUT  = 360
+
+ALGO   = Fast
+ISMEAR = 0
+SIGMA  = 0.01
+
+LWAVE  = T
+LCHARG = T
+
+NPAR   = 4
+

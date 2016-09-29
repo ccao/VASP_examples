@@ -1,0 +1,20 @@
+SYSTEM = Si_band
+PREC   = High
+EDIFF  = 1.0d-7
+
+ENCUT  = 360
+
+ALGO   = Fast
+ISMEAR = -5
+
+ICHARG = 11
+LORBIT = 11
+EMIN   = -5.0
+EMAX   = 15.0
+NEDOS  = 20000
+
+LWAVE  = F
+LCHARG = F
+
+NPAR   = 4
+

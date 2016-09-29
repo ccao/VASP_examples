@@ -1,0 +1,75 @@
+#!/bin/bash
+#
+#PBS -N Si_encut
+#PBS -o mpi.out
+#PBS -e mpi.err
+#PBS -j oe
+#PBS -l nodes=1:ppn=8
+#PBS -l walltime=24:30:00
+#PBS -q submit
+
+module load allintel/default
+
+exe=/public/software/vasp/5.3.5/vasp-impi
+
+# Number of threads per MPI process ...  ! Always 1 for VASP jobs...
+NTHREAD=1
+# Number of cores requested ...
+NCORE="`cat $PBS_NODEFILE | wc -l`"
+# Number of MPI processes ...
+NPROCS=$(($NCORE/$NTHREAD))
+
+if [ "$NTHREAD"=="1" ]; then
+  MKL_SERIAL=YES
+else
+  MKL_SERIAL=NO
+fi
+
+OMP_NUM_THREADS=${NTHREAD}
+MKL_NUM_THREADS=${NTHREAD}
+
+export MKL_SERIAL OMP_NUM_THREADS MKL_NUM_THREADS
+
+cd $PBS_O_WORKDIR
+
+echo "## Job $PBS_JOBNAME : $PBS_JOBID start ... "
+echo "##   Requested total $NCORE cores "
+echo "##   With $NPROCS x $NTHREAD division (MPI process x OpenMP thread)"
+echo "##   Running on nodes... "
+echo "## ======================================== "
+cat $PBS_NODEFILE | uniq -c
+echo "## ======================================== "
+echo "## Current Date/Time @ Calculation Beginning : `date`"
+
+rm -f vasp.log
+
+for encut in 240 260 280 300 320 340 360 380 400; do
+  mkdir ${encut}
+  cd ${encut}
+
+  cat > INCAR <<EOF
+SYSTEM = Si_test
+PREC   = High
+EDIFF  = 1.0d-6
+
+ENCUT  = ${encut}
+
+ALGO   = Fast
+ISMEAR = 0
+SIGMA  = 0.01
+
+LWAVE  = F
+LCHARG = F
+
+NPAR   = 4
+EOF
+
+  $exe > log &
+  cd ..
+
+done
+
+  grep "OUTPUT" ${encut}/log > summary.log
+
+echo "Finishing date/time: `date`"
+echo "Job done..."

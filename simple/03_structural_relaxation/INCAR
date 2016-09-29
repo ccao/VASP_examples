@@ -1,0 +1,21 @@
+SYSTEM = Si_test
+PREC   = High
+EDIFF  = 1.0d-7
+
+ENCUT  = 360
+
+ALGO   = Fast
+ISMEAR = 0
+SIGMA  = 0.01
+
+EDIFFG = -0.001
+NSW    = 100
+IBRION = 1
+ISIF   = 3
+NELMIN = 8
+
+LWAVE  = F
+LCHARG = F
+
+NPAR   = 4
+

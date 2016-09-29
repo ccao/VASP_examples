@@ -1,0 +1,63 @@
+#!/bin/bash
+#
+#PBS -N Si_kpt
+#PBS -o mpi.out
+#PBS -e mpi.err
+#PBS -j oe
+#PBS -l nodes=1:ppn=8
+#PBS -l walltime=24:30:00
+#PBS -q submit
+
+module load allintel/default
+
+exe=/public/software/vasp/5.3.5/vasp-impi
+
+# Number of threads per MPI process ...  ! Always 1 for VASP jobs...
+NTHREAD=1
+# Number of cores requested ...
+NCORE="`cat $PBS_NODEFILE | wc -l`"
+# Number of MPI processes ...
+NPROCS=$(($NCORE/$NTHREAD))
+
+if [ "$NTHREAD"=="1" ]; then
+  MKL_SERIAL=YES
+else
+  MKL_SERIAL=NO
+fi
+
+OMP_NUM_THREADS=${NTHREAD}
+MKL_NUM_THREADS=${NTHREAD}
+
+export MKL_SERIAL OMP_NUM_THREADS MKL_NUM_THREADS
+
+cd $PBS_O_WORKDIR
+
+echo "## Job $PBS_JOBNAME : $PBS_JOBID start ... "
+echo "##   Requested total $NCORE cores "
+echo "##   With $NPROCS x $NTHREAD division (MPI process x OpenMP thread)"
+echo "##   Running on nodes... "
+echo "## ======================================== "
+cat $PBS_NODEFILE | uniq -c
+echo "## ======================================== "
+echo "## Current Date/Time @ Calculation Beginning : `date`"
+
+rm -f vasp.log
+
+for kpt in 4 6 8 12 16; do
+
+  cat > KPOINTS <<EOF
+Automatic Mesh
+0
+Gamma
+${kpt} ${kpt} ${kpt}
+0  0  0
+EOF
+
+mpirun -np ${NPROCS} $exe >> vasp.log
+
+mv OSZICAR OSZICAR_${kpt}
+
+done
+
+echo "Finishing date/time: `date`"
+echo "Job done..."
